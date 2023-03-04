@@ -23,12 +23,12 @@ What it says on the tin. Uses a base vertex chain template, randomizes the verte
 spaceship_generator.blend
 A Bender Geometry Nodes setup for generating starships!
 
-![ProcgenSpaceship](Example Spaceships.jpg)
+![ProcgenSpaceship](ExampleSpaceships.jpg)
 
 spaceship_generator_Boxy.blend
 With another variation that does more long tall boxy ships.
 
-![ProcgenSpaceshipBoxy](Example Spaceships Boxy.jpg)
+![ProcgenSpaceshipBoxy](ExampleSpaceshipsBoxy.jpg)
 
 ## Bookshelf
 ProcgenBookshelf.blend
