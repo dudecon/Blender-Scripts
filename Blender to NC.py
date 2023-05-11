@@ -13,6 +13,9 @@ JOGSPD = 1200 # laser traverse speed
 LSRSPD = 700  # laser burn speed
 LSRPOW = 255  # laser burn power (out of 255)
 
+LaserPowerFromBevelWeight = True
+LSRPOW = 188
+
 LOOPDIV = 2   # fraction of points for loops, to speed up optimization
 
 VERBOSE = False
@@ -29,9 +32,14 @@ ob.select_set(True)
 savefile = f'//{obname}_bl.nc'
 
 # store the edges as vert index pair tuples
-edges = [(e.vertices[0], e.vertices[1]) for e in dta.edges]
+edges = [(e.vertices[0], e.vertices[1], e.bevel_weight) for e in dta.edges]
 # store the vertices as x,y tuples
-verts = [(v.co[0], v.co[1]) for v in dta.vertices]
+verts = [[v.co[0], v.co[1]] for v in dta.vertices]
+
+# store the edges connected to each vertex
+for i, e in enumerate(edges):
+    verts[e[0]].append(i)
+    verts[e[1]].append(i)
 
 # build an array for finding any "corner" verticies.
 # These are verticies which have anything other than 2 edges connected to them.
@@ -173,13 +181,34 @@ while len(pointstosearch):
     # for each segment or loop, jog to the start, turn on the laser, complete the path, and turn off again.
     OutString += f"G00 X{X:.2f} Y{Y:.2f} F{JOGSPD}\n"
     # M03 is spindle on, s is the spindle speed (or laser power in this case), from 0 to 255
-    OutString += f"M03 S{LSRPOW}\n"
-    for curidx in grp[1:]:
-        curpos = grabpointdata(curidx)
-        X = curpos['X']
-        Y = curpos['Y']
-        # G01 is linear motion
-        OutString += f"G01 X{X:.2f} Y{Y:.2f} F{LSRSPD}\n"
+    if LaserPowerFromBevelWeight:
+        # Laser power is not uniform, so do nothing here
+        pass
+    else:
+        OutString += f"M03 S{LSRPOW}\n"
+    prevvertid = pidx
+    if LaserPowerFromBevelWeight:
+        for curidx in grp[1:]:
+            curpos = grabpointdata(curidx)
+            X = curpos['X']
+            Y = curpos['Y']
+            # G01 is linear motion
+            SegmentPower = LSRPOW
+            for eid in verts[curidx][2:]:
+                edge = edges[eid]
+                if prevvertid in edge[:2]:
+                    bevelWeight = edge[2]
+                    if bevelWeight > 0:
+                        SegmentPower = int(LSRPOW*bevelWeight)
+            OutString += f"G01 X{X:.2f} Y{Y:.2f} F{LSRSPD} S{SegmentPower}\n"
+            prevvertid = curidx
+    else:
+        for curidx in grp[1:]:
+            curpos = grabpointdata(curidx)
+            X = curpos['X']
+            Y = curpos['Y']
+            # G01 is linear motion
+            OutString += f"G01 X{X:.2f} Y{Y:.2f} F{LSRSPD}\n"
     # when done, turn the laser back off
     OutString += "M03 S0\n"
 
