@@ -1,29 +1,24 @@
 OutTextName = "Timestamp Output"
 
-
-Example_labels_Text = """00:00 Ren Faire
-06:59 Summer Game Fest 2022
-11:35 Diablo Immortal
-19:18 Amazing Cultivation Simulator
-22:30 Midnight Fight Express
-26:59 Mythic tier
-29:47 Homeworld: Deserts of Kharak
-39:20 Cyberpunk spire
-41:20 Mailbag: Collectibles and Unlockables
-52:26 Mailbag: New experience increases appreciation of old thing
-1:01:07 Outro"""
-
-
 #--------------------------------------#
 #--------------CODE BELOW--------------#
 #--------------------------------------#
 
-
 import bpy
+from time import sleep
+
+bpy.context.space_data.text.name = "Timestamp Generator"
 
 if OutTextName not in bpy.data.texts:
     bpy.data.texts.new(OutTextName)
 OutText = bpy.data.texts[OutTextName]
+bpy.context.space_data.text = OutText
+#bpy.context.space_data.show_syntax_highlight = False
+
+# This doesn't seem to work
+# attempting to move the cursor to the end so it doesn't insert the first line at the beginning
+#OutText.current_character = len(OutText.as_string())
+
 
 curscene = bpy.data.scenes[0]
 cursequences = curscene.sequence_editor.sequences
@@ -52,15 +47,32 @@ def find_label(frame):
             timestamp = f"{hrs}:" + timestamp
     return timestamp
 
+def refresh(target_area_type = 'TEXT_EDITOR'):
+    for area in bpy.context.screen.areas:
+        if area.type == target_area_type:
+            area.tag_redraw()
+
+def write_text_with_pause(lines, text_block, pause_duration):
+    if lines:
+        line = lines.pop(0)
+        text_block.write(line)
+        #print(f"Added: {line}")
+
+        # Refresh the UI
+        refresh()
+
+        # Schedule the next line to be written
+        bpy.app.timers.register(lambda: write_text_with_pause(lines, text_block, pause_duration), first_interval=pause_duration)
+    else:
+        #print("Text generation completed.")
+        pass
+    return None
+
 AllTimes = []
 # Write out the timestamps
 for sqc in cursequences:
     if sqc.type != "TEXT": continue
     AllTimes.append((sqc.frame_start,sqc.text))
 AllTimes.sort()
-for sqcentry in AllTimes:
-    OutText.write(find_label(sqcentry[0]))
-    OutText.write(" ")
-    OutText.write(sqcentry[1])
-    OutText.write("\n")
-
+lines = ["\nTimestamps\n",] + [find_label(sqcentry[0]) + " " + sqcentry[1] + "\n" for sqcentry in AllTimes]
+write_text_with_pause(lines, OutText, 0.001)
