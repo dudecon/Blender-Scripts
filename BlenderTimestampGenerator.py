@@ -1,3 +1,5 @@
+OutTextName = "Timestamp Output"
+
 
 Example_labels_Text = """00:00 Ren Faire
 06:59 Summer Game Fest 2022
@@ -12,14 +14,16 @@ Example_labels_Text = """00:00 Ren Faire
 1:01:07 Outro"""
 
 
-import bpy
-
-OutText = bpy.data.texts["Output"]
-
 #--------------------------------------#
 #--------------CODE BELOW--------------#
 #--------------------------------------#
 
+
+import bpy
+
+if OutTextName not in bpy.data.texts:
+    bpy.data.texts.new(OutTextName)
+OutText = bpy.data.texts[OutTextName]
 
 curscene = bpy.data.scenes[0]
 cursequences = curscene.sequence_editor.sequences
@@ -42,7 +46,7 @@ def find_label(frame):
     if total_secs > 0:
         mins = int(total_secs // 60)
         secs = int(total_secs % 60)
-        timestamp = f"{mins}:{secs}"
+        timestamp = f"{mins:02}:{secs:02}"
         if total_secs > 60*60:
             hrs = int(total_secs // (60*60))
             timestamp = f"{hrs}:" + timestamp
