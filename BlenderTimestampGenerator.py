@@ -14,25 +14,7 @@ bpy.context.space_data.text = OutText
 curscene = bpy.data.scenes[0]
 cursequences = curscene.sequence_editor.sequences
 FPS = curscene.render.fps
-
-def find_frame(timestamp_label):
-    """
-    Convert a timestamp label (HH:MM:SS) into a frame number.
-    
-    Args:
-        timestamp_label (str): The timestamp label to convert.
-    
-    Returns:
-        int: The frame number corresponding to the given timestamp.
-    """
-    total_secs = 0
-    digits = timestamp_label.split(':')
-    i = 0
-    while len(digits) > 0:
-        total_secs += (60 ** i) * int(digits.pop())
-        i += 1
-    frame = FPS * total_secs
-    return frame
+if FPS < 10: FPS = 30
 
 def find_label(frame):
     """
