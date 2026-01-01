@@ -46,5 +46,6 @@ This isn't actually a script at all yet! Just laying the groundwork for it so fa
 ## Deco Vines
 Deco Vines.blend
 I started this project to create decorative vines for a cabinet laser burning project I was working on. Remarkably flexible!
+More info on my website: https://peripheralarbor.com/gallery/CG+Art/scripts/#DecoVines
 
 ![Art Deco Recursive Spiral Vines](DecoVines.png)
